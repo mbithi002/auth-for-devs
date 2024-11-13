@@ -149,3 +149,17 @@ export const resetPassword = async (req, res) => {
         return res.status(500).json({ error: 'Internal server error' });
     }
 }
+export const checkAuth = async (req, res) => {
+    const { user } = req
+    try {
+        if (!user) {
+            return res.status(404).json({ error: "check auth User not found" })
+        }
+        res.status(200).json({
+            user
+        })
+    } catch (error) {
+        console.error('Error in checkAuth:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+}
