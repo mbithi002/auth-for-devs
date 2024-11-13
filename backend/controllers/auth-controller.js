@@ -61,16 +61,37 @@ export const verifyEmail = async (req, res) => {
     }
 }
 export const login = async (req, res) => {
+    const { email, password } = req.body
     try {
-
+        if (!email || !password) {
+            return res.status(400).json({ error: "Email and password are required" })
+        }
+        const user = await User.findOne({ email })
+        if (!user) {
+            return res.status(400).json({ error: "Invalid email or password" })
+        }
+        const isPassword = await bcryptjs.compare(password, user.password)
+        if (!isPassword) {
+            return res.status(400).json({ error: "Invalid email or password" })
+        }
+        generateTokenAndSetCookie(res, user._id)
+        user.lastLogin = new Date()
+        await user.save()
+        res.status(200).json({
+            message: "Login successfull",
+            user: { ...user._doc, password: undefined },
+        })
     } catch (error) {
-
+        console.error('Error in login:', error);
+        return res.status(500).json({ error: 'Internal server error' });
     }
 }
 export const logout = async (req, res) => {
     try {
-
+        res.clearCookie("token")
+        res.status(200).json({ message: "Logout successful" })
     } catch (error) {
-
+        console.error('Error in logout:', error);
+        return res.status(500).json({ error: 'Internal server error' });
     }
 }
