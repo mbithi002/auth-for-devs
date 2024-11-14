@@ -1,5 +1,5 @@
 import { Toaster } from 'react-hot-toast'
-import { Route, Routes } from 'react-router'
+import { Route, Routes, useNavigate } from 'react-router'
 import './App.css'
 import Footer from './components/footer/Footer.jsx'
 import Header from './components/header/Header.jsx'
@@ -10,13 +10,14 @@ import Dashboard from './pages/dashboard/Dashboard.jsx'
 import Home from './pages/home/Home.jsx'
 
 function App() {
+  const navigate = useNavigate()
   const { authUser, isLoading, isError } = useAuthUser()
   return (
     <>
       <Header />
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/dashboard/:slug" element={authUser && !isLoading && !isError && <Dashboard />} />
+        <Route path="/dashboard/:slug" element={(authUser && !isLoading && !isError) ? <Dashboard /> : <Home />} />
         <Route path='/login' element={<Login />} />
         <Route path='/signup' element={<Signup />} />
       </Routes>

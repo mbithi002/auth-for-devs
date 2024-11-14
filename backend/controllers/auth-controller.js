@@ -155,9 +155,7 @@ export const checkAuth = async (req, res) => {
         if (!user) {
             return res.status(404).json({ error: "check auth User not found" })
         }
-        res.status(200).json({
-            user
-        })
+        res.status(200).json(user)
     } catch (error) {
         console.error('Error in checkAuth:', error);
         return res.status(500).json({ error: 'Internal server error' });
