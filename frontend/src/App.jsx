@@ -8,6 +8,7 @@ import Login from './pages/auth/Login.jsx'
 import Signup from './pages/auth/Signup.jsx'
 import Dashboard from './pages/dashboard/Dashboard.jsx'
 import Home from './pages/home/Home.jsx'
+import PasswordReset from './pages/reset/PasswordReset.jsx'
 
 function App() {
   const navigate = useNavigate()
@@ -20,6 +21,7 @@ function App() {
         <Route path="/dashboard" element={(authUser && !isLoading && !isError) ? <Dashboard /> : <Login />} />
         <Route path='/login' element={<Login />} />
         <Route path='/signup' element={<Signup />} />
+        <Route path='/reset-password/:slug' element={<PasswordReset />} />
       </Routes>
       <Footer />
       <Toaster
