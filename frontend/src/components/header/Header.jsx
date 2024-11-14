@@ -16,7 +16,8 @@ const Header = () => {
                 <ul className="menu menu-horizontal px-1 sm:inline-flex hidden">
                     {
                         authUser && (
-                            <Link to={`/dashboard/${authUser._id}`}>
+                            <Link to={`/dashboard`}>
+                            {/* <Link to={`/dashboard/${authUser._id}`}> */}
                                 <li>
                                     <a>
                                         Dashboard
@@ -25,7 +26,7 @@ const Header = () => {
                             </Link>
                         )
                     }
-                    {
+                    {/* {
                         authUser && (
                             <li>
                                 <details>
@@ -42,7 +43,7 @@ const Header = () => {
                                 </details>
                             </li>
                         )
-                    }
+                    } */}
                     {
                         !authUser && (
                             <>

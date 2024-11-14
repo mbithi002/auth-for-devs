@@ -17,7 +17,7 @@ function App() {
       <Header />
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/dashboard/:slug" element={(authUser && !isLoading && !isError) ? <Dashboard /> : <Home />} />
+        <Route path="/dashboard" element={(authUser && !isLoading && !isError) ? <Dashboard /> : <Home />} />
         <Route path='/login' element={<Login />} />
         <Route path='/signup' element={<Signup />} />
       </Routes>
