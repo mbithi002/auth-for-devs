@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 
 const Home = () => {
     return (
@@ -9,7 +10,9 @@ const Home = () => {
                     <p className="py-6">
                         Impleenting Authentication: credential verification and encryption, secure routing, emailing, credential recovery and much more in one single application.Using MongoDB, Express, Node, React and Mailtrap from emailing.
                     </p>
-                    <button className="btn btn-primary">Get Started</button>
+                    <Link to={'/dashboard'}>
+                        <button className="btn btn-primary">Get Started</button>
+                    </Link>
                 </div>
             </div>
         </div>

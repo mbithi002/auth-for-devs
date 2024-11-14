@@ -17,14 +17,14 @@ function App() {
       <Header />
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/dashboard" element={(authUser && !isLoading && !isError) ? <Dashboard /> : <Home />} />
+        <Route path="/dashboard" element={(authUser && !isLoading && !isError) ? <Dashboard /> : <Login />} />
         <Route path='/login' element={<Login />} />
         <Route path='/signup' element={<Signup />} />
       </Routes>
       <Footer />
       <Toaster
         toastOptions={{
-          duration: 1000,
+          duration: 3000,
           position: 'top-center',
           style: {
             background: '#333',
@@ -37,7 +37,7 @@ function App() {
             },
           },
           error: {
-            duration: 2000,
+            duration: 3000,
             style: {
               background: 'red',
               color: 'white',
