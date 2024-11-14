@@ -12,6 +12,7 @@ const Dashboard = () => {
   const navigate = useNavigate()
   const { authUser, isLoading, isError: isAuthUserError } = useAuthUser()
   const [code, setCode] = useState(new Array(6).fill(''))
+  const [cooldown, setCooldown] = useState(0)
 
   const handleInputChange = (e, index) => {
     const value = e.target.value.slice(-1); // Ensure only one character is taken
@@ -35,8 +36,6 @@ const Dashboard = () => {
   const { mutate: verifyEmail, isPending, isError } = useMutation({
     mutationFn: async () => {
       try {
-        console.log(code.join());
-
         const res = await fetch("/api/auth/verify-email", {
           method: 'POST',
           headers: {
@@ -63,9 +62,54 @@ const Dashboard = () => {
     }
   })
 
+  const { mutate: getNewToken, isPending: gettingNewToken, isError: errorGettingNewToken } = useMutation({
+    mutationFn: async () => {
+      try {
+        const res = await fetch("/api/auth/newVerificationToken", {
+          method: 'POST',
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ email: authUser.email })
+        })
+        const data = await res.json()
+        if (!res.ok) {
+          throw new Error(data.error)
+        }
+        return data
+      } catch (error) {
+        throw new Error(error)
+      }
+    },
+    onSuccess: () => {
+      toast.success("New verification token sent")
+      setCooldown(300) // Start a 5-minute cooldown
+      queryClient.invalidateQueries(['authUser'])
+    },
+    onError: (error) => {
+      toast.error(error.message)
+    }
+  })
+
   useEffect(() => {
     if (!authUser && !isLoading && !isAuthUserError) navigate('/')
   }, [authUser, isLoading, isAuthUserError, navigate])
+
+  // Handle cooldown timer
+  useEffect(() => {
+    if (cooldown > 0) {
+      const interval = setInterval(() => {
+        setCooldown(prev => prev - 1)
+      }, 1000)
+      return () => clearInterval(interval)
+    }
+  }, [cooldown])
+
+  const formatCooldown = (seconds) => {
+    const minutes = Math.floor(seconds / 60)
+    const remainingSeconds = seconds % 60
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`
+  }
 
   return (
     <div className="min-h-screen">
@@ -73,17 +117,13 @@ const Dashboard = () => {
         <div className="avatar placeholder items-center gap-3 mx-auto my-3">
           <div className="bg-neutral text-neutral-content w-24 rounded-full">
             <span className="text-3xl">
-              {
-                formatName(authUser)
-              }
+              {formatName(authUser)}
             </span>
           </div>
         </div>
         <div className="flex flex-row items-center justify-center">
           <CiSettings className='text-xl' />
-          <h2 className="text-2xl text-neutral-content p-3">
-            Settings
-          </h2>
+          <h2 className="text-2xl text-neutral-content p-3">Settings</h2>
         </div>
         <label className="input input-bordered flex items-center gap-2">
           Name
@@ -149,7 +189,13 @@ const Dashboard = () => {
               />
             ))}
           </div>
-          <button className="btn my-3">Resend code</button>
+          <button
+            onClick={() => getNewToken()}
+            className="btn my-3"
+            disabled={cooldown > 0}
+          >
+            {cooldown > 0 ? `Resend in ${formatCooldown(cooldown)}` : (gettingNewToken ? 'Sending token' : 'Resend token')}
+          </button>
           <div className="modal-action">
             <button
               className="btn"

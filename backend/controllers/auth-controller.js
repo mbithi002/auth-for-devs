@@ -62,7 +62,6 @@ export const verifyEmail = async (req, res) => {
         return res.status(500).json({ error: "Internal server error" });
     }
 };
-
 export const getNewVerificationToken = async (req, res) => {
     const { email } = req.body
     try {
@@ -77,7 +76,7 @@ export const getNewVerificationToken = async (req, res) => {
         if (!ressponse) {
             return res.status(500).json({ error: 'Failed to send verification email' })
         }
-        return res.status(200).json(res)
+        return res.status(200).json(ressponse)
     } catch (error) {
         console.error('Error in getNewVerificationToken:', error);
         return res.status(500).json({ error: 'Internal server error' });
