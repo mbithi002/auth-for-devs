@@ -38,26 +38,48 @@ export const signup = async (req, res) => {
 
 }
 export const verifyEmail = async (req, res) => {
-    const { code } = req.body
+    const { code } = req.body;
+
     try {
-        const user = await User.findOne({
-            verificationToken: code,
-            verificationTokenExpiresAt: { $gt: Date.now() }
-        })
+        const user = await User.findOne({ verificationToken: code });
         if (!user) {
-            return res.status(400).json({ error: "Invalid / expired code" })
+            return res.status(400).json({ error: "Invalid verification token" });
+        }
+        if (user.verificationTokenExpiresAt <= Date.now()) {
+            return res.status(400).json({ error: "Verification token has expired" });
         }
         user.isVerified = true;
         user.verificationToken = undefined;
         user.verificationTokenExpiresAt = undefined;
         await user.save();
-        await sendWelcomeEmail(user.email, user.name)
+        await sendWelcomeEmail(user.email, user.name);
         res.status(200).json({
             message: "Email verified successfully",
             user: { ...user._doc, password: undefined },
-        })
+        });
     } catch (error) {
-        console.error('Error in verify-email:', error);
+        console.error("Error in verifyEmail:", error);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+};
+
+export const getNewVerificationToken = async (req, res) => {
+    const { email } = req.body
+    try {
+        const user = await User.findOne({ email })
+        if (!user) {
+            return res.status(400).json({ error: "User not found" })
+        }
+        const newToken = await generateVerificationToken()
+        user.verificationToken = newToken
+        await user.save()
+        const ressponse = await sendVerificationEmail(email, newToken)
+        if (!ressponse) {
+            return res.status(500).json({ error: 'Failed to send verification email' })
+        }
+        return res.status(200).json(res)
+    } catch (error) {
+        console.error('Error in getNewVerificationToken:', error);
         return res.status(500).json({ error: 'Internal server error' });
     }
 }
