@@ -1,8 +1,9 @@
 import React from 'react'
 
-const Loader = () => {
+const Loader = ({ s = 'xs' }) => {
+    const sizeClass = `loading-${s}`
     return (
-        <div>Loader</div>
+        <span className={`loading loading-ring ${sizeClass}`}></span>
     )
 }
 
