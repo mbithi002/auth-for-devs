@@ -123,11 +123,24 @@ const Header = () => {
                 <div className="flex-none">
                     <ul className="menu menu-horizontal px-1 sm:inline-flex hidden">
                         {authUser && (
-                            <Link to={`/dashboard`}>
-                                <li>
-                                    <a>Dashboard</a>
+                            <>
+                                <Link to={`/dashboard`}>
+                                    <li>
+                                        <a>Dashboard</a>
+                                    </li>
+                                </Link>
+                                <li className='bg-accent text-base-200' onClick={logout}>
+                                    <a>
+                                        {
+                                            loggingOut ? (
+                                                <Loader />
+                                            ) : (
+                                                "Logout"
+                                            )
+                                        }
+                                    </a>
                                 </li>
-                            </Link>
+                            </>
                         )}
                         {!authUser && (
                             <>
