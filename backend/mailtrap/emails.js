@@ -1,4 +1,4 @@
-import { PASSWORD_RESET_REQUEST_TEMPLATE, PASSWORD_RESET_SUCCESS_TEMPLATE, VERIFICATION_EMAIL_TEMPLATE } from "./emailTemplates.js"
+import { PASSWORD_RESET_REQUEST_TEMPLATE, PASSWORD_RESET_SUCCESS_TEMPLATE, VERIFICATION_EMAIL_TEMPLATE, WELCOME_EMAIL_PEMPLATE } from "./emailTemplates.js"
 import { mailTrapClient, sender } from "./mailtrap.config.js"
 
 export const sendVerificationEmail = async (email, verificationToken) => {
@@ -27,11 +27,9 @@ export const sendWelcomeEmail = async (email, userName) => {
         const response = await mailTrapClient.send({
             from: sender,
             to: recipient,
-            template_uuid: 'db699a28-f7e5-4233-b2bb-4e45fe22f0b8',
-            template_variables: {
-                "company_info_name": "Auth Company",
-                "name": userName
-            }
+            subject: "Welcome email",
+            html: WELCOME_EMAIL_PEMPLATE.replace("name", userName, "dashboardURL", `${process.env.CLIENT_URL}/dashboard`),
+            category: "Welcome Email"
         })
         console.log("Welcome Email sent", response);
         return response
@@ -41,7 +39,7 @@ export const sendWelcomeEmail = async (email, userName) => {
     }
 }
 
-export const sendOasswordResetEmail = async (email, resetUrl) => {
+export const sendPasswordResetEmail = async (email, resetUrl) => {
     const recipient = [{ email }]
     try {
         const response = await mailTrapClient.send({

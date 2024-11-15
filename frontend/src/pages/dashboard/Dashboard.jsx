@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react'
 import { toast } from 'react-hot-toast'
 import { CiSettings } from 'react-icons/ci'
 import { useNavigate } from 'react-router'
+import Loader from '../../components/common/Loader'
 import useAuthUser from '../../hooks/useAuthUser'
 import { formatMemberSinceDate } from '../../utils/date'
 import { formatName } from '../../utils/formatName'
@@ -15,24 +16,20 @@ const Dashboard = () => {
   const [cooldown, setCooldown] = useState(0)
 
   const handleInputChange = (e, index) => {
-    const value = e.target.value.slice(-1); // Ensure only one character is taken
+    const value = e.target.value.slice(-1);
     const newCode = [...code];
     newCode[index] = value;
     setCode(newCode);
-
-    // Move focus to the next input
     if (value && index < 5) {
       document.getElementById(`code-input-${index + 1}`).focus();
     }
   }
-
   const handleKeyDown = (e, index) => {
     if (e.key === 'Backspace' && !code[index] && index > 0) {
       // Move focus to the previous input
       document.getElementById(`code-input-${index - 1}`).focus();
     }
   }
-
   const { mutate: verifyEmail, isPending, isError } = useMutation({
     mutationFn: async () => {
       try {
@@ -61,7 +58,6 @@ const Dashboard = () => {
       toast.error(error.message)
     }
   })
-
   const { mutate: getNewToken, isPending: gettingNewToken, isError: errorGettingNewToken } = useMutation({
     mutationFn: async () => {
       try {
@@ -90,12 +86,32 @@ const Dashboard = () => {
       toast.error(error.message)
     }
   })
-
+  const { mutate: deleteAccount, isPending: deletingAccount, isError: errorDeleting } = useMutation({
+    mutationFn: async () => {
+      try {
+        const res = await fetch("/api/auth/delete", {
+          method: 'DELETE',
+        })
+        const data = await res.json()
+        if (!res.ok) {
+          throw new Error(data.error) || "something went wrong"
+        }
+        return data
+      } catch (error) {
+        throw new Error(error)
+      }
+    },
+    onSuccess: () => {
+      toast.success("Account deleted")
+      queryClient.invalidateQueries({ queryKey: ['authUser'] })
+    },
+    onError: (error) => {
+      toast.error(error.message) || "something went wrong"
+    }
+  })
   useEffect(() => {
     if (!authUser && !isLoading && !isAuthUserError) navigate('/')
   }, [authUser, isLoading, isAuthUserError, navigate])
-
-  // Handle cooldown timer
   useEffect(() => {
     if (cooldown > 0) {
       const interval = setInterval(() => {
@@ -104,7 +120,6 @@ const Dashboard = () => {
       return () => clearInterval(interval)
     }
   }, [cooldown])
-
   const formatCooldown = (seconds) => {
     const minutes = Math.floor(seconds / 60)
     const remainingSeconds = seconds % 60
@@ -113,7 +128,7 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen">
-      <div className="flex flex-col p-5">
+      <div className="flex flex-col p-5 gap-2">
         <div className="avatar placeholder items-center gap-3 mx-auto my-3">
           <div className="bg-neutral text-neutral-content w-24 rounded-full">
             <span className="text-3xl">
@@ -171,6 +186,13 @@ const Dashboard = () => {
             disabled
           />
         </label>
+        <button disabled={deletingAccount} onClick={deleteAccount} className="btn bg-red-500 my-1 text-white">
+          {
+            deletingAccount ? (
+              <Loader s='md' />
+            ) : 'Delete this Account'
+          }
+        </button>
       </div>
       <dialog id="verify_email_modal" className="modal">
         <div className="modal-box">

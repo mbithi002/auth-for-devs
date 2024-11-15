@@ -1,6 +1,6 @@
 import bcryptjs from 'bcryptjs';
 import crypto from 'crypto';
-import { sendOasswordResetEmail, sendResetSuccessEmail, sendVerificationEmail, sendWelcomeEmail } from '../mailtrap/emails.js';
+import { sendPasswordResetEmail, sendResetSuccessEmail, sendVerificationEmail, sendWelcomeEmail } from '../mailtrap/emails.js';
 import { User } from "../models/user.model.js";
 import { generateTokenAndSetCookie } from '../utils/generateTokenAndSetCookie.js';
 import { generateVerificationToken } from '../utils/generateVerificationToken.js';
@@ -132,7 +132,7 @@ export const forgotPassword = async (req, res) => {
         user.resetPasswordToken = resetToken
         user.resetPasswordExpiresAt = resetTokenExpiresAt
         await user.save()
-        await sendOasswordResetEmail(user.email, `${process.env.CLIENT_URL}/reset-password/${resetToken}`)
+        await sendPasswordResetEmail(user.email, `${process.env.CLIENT_URL}/reset-password/${resetToken}`)
         res.status(200).json({
             message: "password reset email sent successfully"
         })
@@ -179,6 +179,20 @@ export const checkAuth = async (req, res) => {
         res.status(200).json(user)
     } catch (error) {
         console.error('Error in checkAuth:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+}
+export const deleteAccount = async (req, res) => {
+    const { user } = req
+    try {
+        const exsists = await User.findById(user._id)
+        if (!exsists || !user) {
+            return res.status(404).json({ error: "User not found" })
+        }
+        await User.findByIdAndDelete(user._id)
+        res.status(200).json({ message: "Account deleted successfully" })
+    } catch (error) {
+        console.error('Error in deleteAccount:', error);
         return res.status(500).json({ error: 'Internal server error' });
     }
 }

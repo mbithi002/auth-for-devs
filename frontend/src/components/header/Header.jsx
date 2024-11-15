@@ -1,12 +1,40 @@
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import React, { useEffect } from 'react';
+import { toast } from 'react-hot-toast';
 import { CiMenuFries } from "react-icons/ci";
 import { Link } from 'react-router-dom';
 import useAuthUser from '../../hooks/useAuthUser';
+import Loader from '../common/Loader';
+import ThemeSwitcher from '../theme/ThemeSwitcher';
 
 const Header = () => {
+    const queryClient = useQueryClient()
     const { authUser } = useAuthUser();
     useEffect(() => { }, [authUser]);
 
+    const { mutate: deleteAccount, isPending: deletingAccount, isError: errorDeleting } = useMutation({
+        mutationFn: async () => {
+            try {
+                const res = await fetch("/api/auth/delete", {
+                    method: 'DELETE',
+                })
+                const data = await res.json()
+                if (!res.ok) {
+                    throw new Error(data.error) || "something went wrong"
+                }
+                return data
+            } catch (error) {
+                throw new Error(error)
+            }
+        },
+        onSuccess: () => {
+            toast.success("Account deleted")
+            queryClient.invalidateQueries({ queryKey: ['authUser'] })
+        },
+        onError: (error) => {
+            toast.error(error.message) || "something went wrong"
+        }
+    })
     return (
         <>
             <div className="navbar bg-base-200 justify-between fixed top-0 left-0 z-40 w-full shadow-md">
@@ -38,9 +66,13 @@ const Header = () => {
                                     <Link to={'/dashboard'}>
                                         <li><a>Dashboard</a></li>
                                     </Link>
-                                    <li className="text-center text-base-200 bg-red-500">
-                                        <a>Logout</a>
-                                    </li>
+                                    <button disabled={deletingAccount} onClick={deleteAccount} className="btn bg-red-500 my-1 text-white">
+                                        {
+                                            deletingAccount ? (
+                                                <Loader s='md' />
+                                            ) : 'Delete this Account'
+                                        }
+                                    </button>
                                 </>
                             )}
                         </ul>
@@ -52,6 +84,7 @@ const Header = () => {
                     <Link to={'/'}>
                         <a className="btn btn-ghost text-xl">Auth</a>
                     </Link>
+                    <ThemeSwitcher />
                 </div>
 
                 {/* Desktop Menu */}
