@@ -35,6 +35,27 @@ const Header = () => {
             toast.error(error.message) || "something went wrong"
         }
     })
+    const { mutate: logout, isPending: loggingOut } = useMutation({
+        mutationFn: async () => {
+            try {
+                const res = await fetch("/api/auth/logout")
+                const data = await res.json()
+                if (!res.ok) {
+                    throw new Error(data.error) || "something went wrong"
+                }
+                return data
+            } catch (error) {
+                throw new Error(error) || "something went wrong"
+            }
+        },
+        onSuccess: () => {
+            toast.success("Logged out")
+            queryClient.invalidateQueries({ queryKey: ['authUser'] })
+        },
+        onError: (error) => {
+            toast.error(error.message) || "something went wrong"
+        }
+    })
     return (
         <>
             <div className="navbar bg-base-200 justify-between fixed top-0 left-0 z-40 w-full shadow-md">
@@ -66,6 +87,17 @@ const Header = () => {
                                     <Link to={'/dashboard'}>
                                         <li><a>Dashboard</a></li>
                                     </Link>
+                                    <li className='bg-accent text-base-200' onClick={logout}>
+                                        <a>
+                                            {
+                                                loggingOut ? (
+                                                    <Loader />
+                                                ) : (
+                                                    "Logout"
+                                                )
+                                            }
+                                        </a>
+                                    </li>
                                     <button disabled={deletingAccount} onClick={deleteAccount} className="btn bg-red-500 my-1 text-white">
                                         {
                                             deletingAccount ? (
