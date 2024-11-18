@@ -2,11 +2,12 @@ import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import express from "express";
 import path from "path";
+import job from './cron.js';
 import { connectDb } from "./db/connectDB.js";
 import authRoutes from './routes/auth.route.js';
 
 dotenv.config()
-
+job.start()
 const app = express()
 const PORT = process.env.PORT || 5000
 const __dirname = path.resolve()
